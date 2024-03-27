@@ -15,6 +15,9 @@ public/assets
 # Build tools specific
 npm-debug.log
 yarn-error.log
+.yarnrc
+.yarn
+compose.yaml
 
 # Editors specific
 .fleet
@@ -23,3 +26,7 @@ yarn-error.log
 
 # Platform specific
 .DS_Store
+
+# Developer: DevOps specific
+push_files.sh
+README_DEV.MD

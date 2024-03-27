@@ -1,0 +1,33 @@
+version: "3.8"
+services:
+  mindstack-notes-api:
+    build:
+      context: ./
+      target: dependencies
+    restart: always
+    container_name: mindstack-notes-api
+    depends_on:
+      - mindstack-notes-db
+    ports:
+      - 3000:3000
+      # following is for DEVELOPMENT/debugging
+      - 9229:9229
+    env_file:
+      - .env
+    volumes:
+      - ./:/home/node/app
+    entrypoint: ./docker_entrypoint.development.sh
+
+  mindstack-notes-db:
+    image: mariadb:10
+    restart: always
+    expose:
+      - 27017
+    container_name: mindstack-notes-db
+    environment:
+      MARIADB_ROOT_PASSWORD: password
+    volumes:
+      - mariadb_volume:/var/lib/mysql
+
+volumes:
+  mariadb_volume:

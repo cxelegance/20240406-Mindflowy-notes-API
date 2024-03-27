@@ -13,7 +13,7 @@
 		"lint": "eslint .",
 		"format": "prettier --write .",
 		"typecheck": "tsc --noEmit",
-		"clean": "bash ./cleanup.sh"
+		"clean": "sh ./cleanup.sh"
 	},
 	"imports": {
 		"#controllers/*": "./app/controllers/*.js",

@@ -7,10 +7,14 @@
 |
 */
 
-import router from '@adonisjs/core/services/router'
+import router from '@adonisjs/core/services/router';
+import MindstacksController from '#controllers/mindstacks_controller';
 
-router.get('/', async () => {
-  return {
-    hello: 'world',
-  }
-})
+router.group(() => {
+
+  router.post('', [MindstacksController, 'create']);
+  router.get(':id', [MindstacksController, 'read']);
+  router.put(':id', [MindstacksController, 'update']);
+  router.delete(':id', [MindstacksController, 'delete']);
+
+}).prefix('mindstack');
