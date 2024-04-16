@@ -18,3 +18,7 @@ router.group(() => {
   router.delete(':id', [MindstacksController, 'delete']);
 
 }).prefix('mindstack');
+
+router.get('', ({response}) => {
+  response.send({ result: 'ok', message: 'Welcome to a JSON API. Try the /mindstack/<id> endpoint.' });
+});

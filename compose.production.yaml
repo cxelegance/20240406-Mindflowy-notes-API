@@ -15,13 +15,19 @@ services:
     entrypoint: ./docker_entrypoint.sh
 
   mindstack-notes-db:
-    image: mariadb:10
+    image: mariadb:lts-jammy
     restart: always
     expose:
-      - 27017
+      - 3306
     container_name: mindstack-notes-db
+    env_file:
+      - .env
     environment:
-      MARIADB_ROOT_PASSWORD: password
+      MARIADB_DATABASE: ${DB_DATABASE}
+      MARIADB_PASSWORD: ${DB_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      # MARIADB_RANDOM_ROOT_PASSWORD: yes
+      MARIADB_USER: ${DB_USER}
     volumes:
       - mariadb_volume:/var/lib/mysql
 
