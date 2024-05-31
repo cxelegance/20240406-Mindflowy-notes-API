@@ -8,21 +8,21 @@
 */
 
 import router from '@adonisjs/core/services/router';
-import MindstacksController from '#controllers/mindstacks_controller';
+import NotebooksController from '#controllers/notebooks_controller';
 import NotesController from '#controllers/notes_controller';
 import UsersController from '#controllers/users_controller';
 
 router.group(() => {
 
-  router.post('', [MindstacksController, 'create']);
-  router.get(':id/notes/', [NotesController, 'readByMindstack']);
-  router.get(':id', [MindstacksController, 'read']);
-  // router.put(':id/notes/', [NotesController, 'updateByMindstack']); // TODO: requires a commit of its own
-  router.put(':id', [MindstacksController, 'update']);
-  router.delete(':id/notes/', [NotesController, 'deleteByMindstack']);
-  router.delete(':id', [MindstacksController, 'delete']);
+  router.post('', [NotebooksController, 'create']);
+  router.get(':id/notes/', [NotesController, 'readByNotebook']);
+  router.get(':id', [NotebooksController, 'read']);
+  // router.put(':id/notes/', [NotesController, 'updateByNotebook']); // TODO: requires a commit of its own
+  router.put(':id', [NotebooksController, 'update']);
+  router.delete(':id/notes/', [NotesController, 'deleteByNotebook']);
+  router.delete(':id', [NotebooksController, 'delete']);
 
-}).prefix('mindstack');
+}).prefix('notebook');
 
 router.group(() => {
 
@@ -36,7 +36,7 @@ router.group(() => {
 router.group(() => {
 
   router.post('', [UsersController, 'create']); // TODO: this is the only route that does NOT require authenticated user
-  router.get(':id/mindstacks/', [MindstacksController, 'readByUser']);
+  router.get(':id/notebooks/', [NotebooksController, 'readByUser']);
   router.get(':id', [UsersController, 'read']);
   router.put(':id', [UsersController, 'update']);
   router.delete(':id', [UsersController, 'delete']);
@@ -44,5 +44,5 @@ router.group(() => {
 }).prefix('user');
 
 router.get('', ({response}) => {
-  response.send({ result: 'ok', message: 'Welcome to a JSON API. Try the /mindstack/<id> endpoint.' });
+  response.send({ result: 'ok', message: 'Welcome to a JSON API. Try the /notebook/<id> endpoint.' });
 });

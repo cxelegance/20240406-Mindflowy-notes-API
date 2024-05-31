@@ -6,7 +6,7 @@ export default class Note extends BaseModel {
   declare id: number
 
   @column()
-  declare mindstackId: number
+  declare notebookId: number
 
   @column()
   declare prevSibling: number

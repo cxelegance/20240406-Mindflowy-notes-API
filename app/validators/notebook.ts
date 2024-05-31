@@ -15,17 +15,17 @@ const fields = {
 
 const vineWithMetaData = vine.withMetaData<{ userId: number }>();
 
-export const mindstackSchema = vine.object({
+export const notebookSchema = vine.object({
 	userId: fields.userId,
 	name: fields.name,
 	description: fields.description.nullable().optional()
 });
 
-export const createMindstackValidator = vineWithMetaData.compile(
-	mindstackSchema
+export const createNotebookValidator = vineWithMetaData.compile(
+	notebookSchema
 );
 
-export const updateMindstackValidator = vineWithMetaData.compile(
+export const updateNotebookValidator = vineWithMetaData.compile(
 	vine.object({
 		userId: vine.number().exists(async (db, value) => {
 			const user = await db

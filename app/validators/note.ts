@@ -1,12 +1,12 @@
 import vine from '@vinejs/vine';
 
 const fields = {
-	mindstackId: vine.number().unique(async (db, value) => {
-		const mindstack = await db
-			.from('mindstacks')
+	notebookId: vine.number().unique(async (db, value) => {
+		const notebook = await db
+			.from('notebooks')
 			.where('id', value)
 			.first();
-		return mindstack;
+		return notebook;
 	}),
 	prevSibling: vine.number(),
 	parent: vine.number(),
@@ -14,7 +14,7 @@ const fields = {
 };
 
 export const noteSchema = vine.object({
-	mindstackId: fields.mindstackId,
+	notebookId: fields.notebookId,
 	prevSibling: fields.prevSibling.nullable().optional(),
 	parent: fields.parent.nullable().optional(),
 	data: fields.data.optional()
@@ -26,7 +26,7 @@ export const createNoteValidator = vine.compile(
 
 export const updateNoteValidator = vine.compile(
 	vine.object({
-		mindstackId: fields.mindstackId.optional(),
+		notebookId: fields.notebookId.optional(),
 		prevSibling: fields.prevSibling.nullable().optional(),
 		parent: fields.parent.nullable().optional(),
 		data: fields.data.optional()
@@ -38,7 +38,7 @@ export const updateArrayNotesValidator = vine.compile(
 		notes: vine.array(
 			vine.object({
 				// id: vine.number(),
-				mindstackId: fields.mindstackId,
+				notebookId: fields.notebookId,
 				prevSibling: fields.prevSibling.nullable(),
 				parent: fields.parent.nullable(),
 				data: fields.data.optional()

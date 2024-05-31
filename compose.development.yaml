@@ -1,13 +1,13 @@
 # version: "3.8"
 services:
-  mindstack-notes-api:
+  mindflowy-notes-api:
     build:
       context: ./
       target: dependencies
     restart: always
-    container_name: mindstack-notes-api
+    container_name: mindflowy-notes-api
     depends_on:
-      - mindstack-notes-db
+      - mindflowy-notes-db
     ports:
       - 3000:3000
       # following is for DEVELOPMENT/debugging
@@ -18,12 +18,12 @@ services:
       - ./:/home/node/app
     entrypoint: ./docker_entrypoint.development.sh
 
-  mindstack-notes-db:
+  mindflowy-notes-db:
     image: mariadb:lts-jammy
     restart: always
     expose:
       - 27017
-    container_name: mindstack-notes-db
+    container_name: mindflowy-notes-db
     env_file:
       - .env
     environment:
