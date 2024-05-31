@@ -1,52 +1,59 @@
 import type { HttpContext } from '@adonisjs/core/http';
-import { errors } from '@adonisjs/core';
+// import { errors } from '@adonisjs/core';
 
 import Mindstack from '#models/mindstack';
-import Note from '#models/note'; // TODO: this is here temporarily; a Mindstack controller should not be manipulating other entities
-import User from '#models/user'; // TODO: this is here temporarily; a Mindstack controller should not be manipulating other entities
+import {
+	createMindstackValidator,
+	updateMindstackValidator
+} from '#validators/mindstack';
 
 export default class MindstacksController {
 
-	async create(ctx: HttpContext){
-		let user = await User.find(1);
-
-		if (user === null) {
-			user = new User();
-			user.email = 'contact@cxelegance.com';
-			user.password = 'thisShouldBeHashed';
-			await user.save();
-		}
-
+	// The createMindstackValidator() will ensure that the payload userId matches that of the logged-in user,
+	// i.e., a user cannot create a mindstack for another user.
+	async create(ctx: HttpContext) {
 		const mindstack = new Mindstack();
-		mindstack.user_id = user.id;
-		mindstack.name = 'my mindstack';
-		mindstack.description = 'this is what a mindstack looks like';
-		await mindstack.save();
+		const payload = await ctx.request.validateUsing(createMindstackValidator,
+			{
+				meta: {
+					userId: ctx.request.qs().loggedInUserId // replace with auth user
+				}
+			}
+		);
 
-		const note = new Note();
-		note.mindstack_id = mindstack.id;
-		note.data = 'this note should cascade delete when the mindstack deletes';
-		await note.save();
+		await mindstack.merge(payload).save();
 
-		ctx.response.send({ result: 'ok', mindstackId: mindstack.id });
+		ctx.response.send({ result: 'ok', mindstack });
 	};
 
-	async read(ctx: HttpContext){
-		const mindstack = await Mindstack.find(ctx.request.param('id'));
+	// We will use a Bouncer to ensure that the logged-in user is allowed to view the specified record.
+	async read(ctx: HttpContext) {
+		const mindstack = await Mindstack.findOrFail(ctx.request.param('id'));
 
-		if(mindstack === null) throw errors.E_ROUTE_NOT_FOUND;
-
-		ctx.response.send({ result: 'ok', id: ctx.request.param('id'), mindstack });
+		ctx.response.send({ result: 'ok', mindstack });
 	};
 
-	async update(ctx: HttpContext){
-		ctx.response.send({ result: 'ok', id: ctx.request.param('id') });
+	// We will use a Bouncer to ensure that the logged-in user is allowed to view the records related to the supplied userId.
+	async readByUser(ctx: HttpContext) {
+		const mindstacks = await Mindstack.findManyBy('userId', ctx.request.param('id'));
+
+		ctx.response.send({ result: 'ok', mindstacks });
 	};
 
-	async delete(ctx: HttpContext){
-		const mindstack = await Mindstack.find(ctx.request.param('id'));
+	// We will use a Bouncer to ensure that the logged-in user is allowed to update the specified record.
+	// The updateMindstackValidator() will ensure that the payload userId exists in the database.
+	async update(ctx: HttpContext) {
+		const mindstack = await Mindstack.findOrFail(ctx.request.param('id'));
+		const payload = await ctx.request.validateUsing(updateMindstackValidator);
 
-		if(mindstack === null) throw errors.E_ROUTE_NOT_FOUND;
+		await mindstack.merge(payload).save();
+
+		ctx.response.send({ result: 'ok', mindstack });
+	};
+
+	// We will use a Bouncer to ensure that the logged-in user is allowed to delete the specified record.
+	async delete(ctx: HttpContext) {
+		const mindstack = await Mindstack.findOrFail(ctx.request.param('id'));
 
 		await mindstack.delete();
 

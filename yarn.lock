@@ -222,10 +222,10 @@
     abstract-logging "^2.0.1"
     pino "^8.17.2"
 
-"@adonisjs/lucid@^20.1.0":
-  version "20.3.1"
-  resolved "https://registry.yarnpkg.com/@adonisjs/lucid/-/lucid-20.3.1.tgz#42f0ca566a99692207bd0c99ea1bcc5818654db6"
-  integrity sha512-6W9WSOArtSsFLCLZzTjdTPtkKkgaxy6R+0N3byD26fmCi5zTOJHsu2rT+FBzpGYTjgP5jA6c67k8ekO9hPkumA==
+"@adonisjs/lucid@^20.5.1":
+  version "20.5.1"
+  resolved "https://registry.yarnpkg.com/@adonisjs/lucid/-/lucid-20.5.1.tgz#dce38122c336af1eb5b8a1d9087aea75eb11bdba"
+  integrity sha512-PXzeRTbkPFhf5ttRv6LbKYbtXXWrYUWxrVmXecHvNbrKZSlP7XQOm45Pgk75lStAXBkEqxgvlC9PRHgM+Bdrog==
   dependencies:
     "@adonisjs/presets" "^2.2.5"
     "@faker-js/faker" "^8.4.1"

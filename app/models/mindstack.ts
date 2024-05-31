@@ -6,7 +6,7 @@ export default class Mindstack extends BaseModel {
   declare id: number
 
   @column()
-  declare user_id: number
+  declare userId: number
 
   @column()
   declare name: string

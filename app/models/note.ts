@@ -6,10 +6,10 @@ export default class Note extends BaseModel {
   declare id: number
 
   @column()
-  declare mindstack_id: number
+  declare mindstackId: number
 
   @column()
-  declare prev_sibling: number
+  declare prevSibling: number
 
   @column()
   declare parent: number
