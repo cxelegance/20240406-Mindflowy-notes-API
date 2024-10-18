@@ -7,10 +7,11 @@ import {
 	updateUserValidator
 } from '#validators/user';
 
+import UserPolicy from '#policies/user_policy';
+
 export default class UsersController {
 
-	// This is meant to be wide open; anyone can create a user.
-	// The createUserValidator() will ensure that the provided email does not belong to any existing user.
+	// This method is meant to be wide open; anyone (logged in or not) can create a user.
 	async create(ctx: HttpContext) {
 		const payload = await ctx.request.validateUsing(createUserValidator);
 		const user = new User();
@@ -20,21 +21,28 @@ export default class UsersController {
 		ctx.response.send({ result: 'ok', user });
 	};
 
-	//  We will use a Bouncer to ensure that the logged-in user is allowed to view the specified record.
 	async read(ctx: HttpContext) {
 		const user = await User.findOrFail(ctx.request.param('id'));
+
+		if (await ctx.bouncer.with(UserPolicy).denies('read', user.id)) {
+			ctx.response.abort({ message: 'Not allowed to view user', status: 403 }, 403);
+		}
 
 		ctx.response.send({ result: 'ok', user });
 	};
 
-	// We will use a Bouncer to ensure that the logged-in user is allowed to update the specified record.
-	// The updateUserValidator() will ensure that the provided email does not belong to any existing user (except than the logged-in user).
 	async update(ctx: HttpContext) {
 		const user = await User.findOrFail(ctx.request.param('id'));
+
+		if (await ctx.bouncer.with(UserPolicy).denies('edit', user.id)) {
+			ctx.response.abort({ message: 'Not allowed to edit user', status: 403 }, 403);
+		}
+
+		const userId = user.id;
 		const payload = await ctx.request.validateUsing(updateUserValidator,
 			{
 				meta: {
-					userId: ctx.request.qs().loggedInUserId // replace with auth user
+					userId
 				}
 			}
 		);
@@ -44,9 +52,12 @@ export default class UsersController {
 		ctx.response.send({ result: 'ok', user });
 	};
 
-	//  We will use a Bouncer to ensure that the logged-in user is allowed to delete the specified record.
 	async delete(ctx: HttpContext) {
 		const user = await User.findOrFail(ctx.request.param('id'));
+
+		if (await ctx.bouncer.with(UserPolicy).denies('delete', user.id)) {
+			ctx.response.abort({ message: 'Not allowed to delete user', status: 403 }, 403);
+		}
 
 		await user.delete();
 

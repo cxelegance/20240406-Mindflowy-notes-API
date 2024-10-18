@@ -32,8 +32,6 @@ They are outlined [here in a table](./diagrams/Routes%20&%20Resources.md).
 ![Image](./diagrams/Mindflowy%20ER.drawio.png)
 
 ## What's to come?
-- Authentication (@adonisjs/session)
-- Authorization (Bouncer)
 - HTTP endpoint tests with test datasets
 - a frontend!
   - draggable notes: dragging a note from one location to another causes a couple API calls (parent, sibling)

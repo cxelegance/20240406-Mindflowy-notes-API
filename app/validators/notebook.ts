@@ -1,10 +1,9 @@
 import vine from '@vinejs/vine';
 
 const fields = {
-	userId: vine.number().exists(async (db, value, field) => {
+	userId: vine.number().exists(async (db, value) => {
 		const user = await db
 			.from('users')
-			.where('id', field.meta.userId)
 			.where('id', value)
 			.first();
 		return user;

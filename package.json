@@ -35,6 +35,7 @@
 	},
 	"devDependencies": {
 		"@adonisjs/assembler": "^7.1.1",
+		"@adonisjs/bouncer": "^3.1.2",
 		"@adonisjs/eslint-config": "^1.2.1",
 		"@adonisjs/prettier-config": "^1.2.1",
 		"@adonisjs/tsconfig": "^1.2.1",

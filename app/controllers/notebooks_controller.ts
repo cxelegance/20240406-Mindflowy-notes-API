@@ -7,43 +7,50 @@ import {
 	updateNotebookValidator
 } from '#validators/notebook';
 
+import NotebookPolicy from '#policies/notebook_policy';
+
 export default class NotebooksController {
 
-	// The createNotebookValidator() will ensure that the payload userId matches that of the logged-in user,
-	// i.e., a user cannot create a notebook for another user.
 	async create(ctx: HttpContext) {
 		const notebook = new Notebook();
-		const payload = await ctx.request.validateUsing(createNotebookValidator,
-			{
-				meta: {
-					userId: ctx.request.qs().loggedInUserId // replace with auth user
-				}
-			}
-		);
+		const payload = await ctx.request.validateUsing(createNotebookValidator);
+
+		if (await ctx.bouncer.with(NotebookPolicy).denies('create', payload.userId)) {
+			ctx.response.abort({ message: 'Not allowed to create notebook', status: 403 }, 403);
+		}
 
 		await notebook.merge(payload).save();
 
 		ctx.response.send({ result: 'ok', notebook });
 	};
 
-	// We will use a Bouncer to ensure that the logged-in user is allowed to view the specified record.
 	async read(ctx: HttpContext) {
 		const notebook = await Notebook.findOrFail(ctx.request.param('id'));
+
+		if (await ctx.bouncer.with(NotebookPolicy).denies('read', notebook.userId)) {
+			ctx.response.abort({ message: 'Not allowed to view notebook', status: 403 }, 403);
+		}
 
 		ctx.response.send({ result: 'ok', notebook });
 	};
 
-	// We will use a Bouncer to ensure that the logged-in user is allowed to view the records related to the supplied userId.
 	async readByUser(ctx: HttpContext) {
 		const notebooks = await Notebook.findManyBy('userId', ctx.request.param('id'));
+
+		if (notebooks.length && await ctx.bouncer.with(NotebookPolicy).denies('read', notebooks[0].userId)) {
+			ctx.response.abort({ message: 'Not allowed to view notebooks', status: 403 }, 403);
+		}
 
 		ctx.response.send({ result: 'ok', notebooks });
 	};
 
-	// We will use a Bouncer to ensure that the logged-in user is allowed to update the specified record.
-	// The updateNotebookValidator() will ensure that the payload userId exists in the database.
 	async update(ctx: HttpContext) {
 		const notebook = await Notebook.findOrFail(ctx.request.param('id'));
+
+		if (await ctx.bouncer.with(NotebookPolicy).denies('edit', notebook.userId)) {
+			ctx.response.abort({ message: 'Not allowed to update notebook', status: 403 }, 403);
+		}
+
 		const payload = await ctx.request.validateUsing(updateNotebookValidator);
 
 		await notebook.merge(payload).save();
@@ -51,9 +58,12 @@ export default class NotebooksController {
 		ctx.response.send({ result: 'ok', notebook });
 	};
 
-	// We will use a Bouncer to ensure that the logged-in user is allowed to delete the specified record.
 	async delete(ctx: HttpContext) {
 		const notebook = await Notebook.findOrFail(ctx.request.param('id'));
+
+		if (await ctx.bouncer.with(NotebookPolicy).denies('delete', notebook.userId)) {
+			ctx.response.abort({ message: 'Not allowed to delete notebook', status: 403 }, 403);
+		}
 
 		await notebook.delete();
 

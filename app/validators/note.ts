@@ -1,7 +1,7 @@
 import vine from '@vinejs/vine';
 
 const fields = {
-	notebookId: vine.number().unique(async (db, value) => {
+	notebookId: vine.number().exists(async (db, value) => {
 		const notebook = await db
 			.from('notebooks')
 			.where('id', value)
@@ -33,16 +33,39 @@ export const updateNoteValidator = vine.compile(
 	})
 );
 
-export const updateArrayNotesValidator = vine.compile(
+export const sameNotebookValidator = vine.withMetaData<{ notebookId: number }>().compile(
 	vine.object({
-		notes: vine.array(
-			vine.object({
-				// id: vine.number(),
-				notebookId: fields.notebookId,
-				prevSibling: fields.prevSibling.nullable(),
-				parent: fields.parent.nullable(),
-				data: fields.data.optional()
-			})
-		)
+		prevSibling: fields.prevSibling.exists(async (db, value, field) => {
+			if (!value) return true;
+			const note = await db
+				.from('notes')
+				.where('id', value)
+				.where('notebook_id', field.meta.notebookId)
+				.first();
+			return note;
+		}).nullable().optional(),
+		parent: fields.parent.exists(async (db, value, field) => {
+			if (!value) return true;
+			const note = await db
+				.from('notes')
+				.where('id', value)
+				.where('notebook_id', field.meta.notebookId)
+				.first();
+			return note;
+		}).nullable().optional()
 	})
 );
+
+// export const updateArrayNotesValidator = vine.compile( // TODO: delete if not using
+// 	vine.object({
+// 		notes: vine.array(
+// 			vine.object({
+// 				// id: vine.number(),
+// 				notebookId: fields.notebookId,
+// 				prevSibling: fields.prevSibling.nullable(),
+// 				parent: fields.parent.nullable(),
+// 				data: fields.data.optional()
+// 			})
+// 		)
+// 	})
+// );
