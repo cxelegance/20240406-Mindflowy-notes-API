@@ -27,41 +27,41 @@ export default class NotesController {
 			}
 		);
 
-		if (await ctx.bouncer.with(NotePolicy).denies('create', notebook.userId, notebook.id, payload.notebookId)) {
-			ctx.response.abort({ message: 'Not allowed to create in notebook', status: 403 }, 403);
+		if (await ctx.bouncer.with(NotePolicy).denies('create', notebook.userId, payload.notebookId, notebook.id)) {
+			ctx.response.abort({ message: 'Not allowed to create in notebook' }, 403);
 		}
 
 		await note.merge(payload).save();
 
-		ctx.response.send({ result: 'ok', note });
+		ctx.response.jSend({ data: { note } });
 	};
 
 	async read(ctx: HttpContext) {
 		const note = await Note.findOrFail(ctx.request.param('id'));
 		const notebook = await Notebook.findOrFail(note.notebookId);
 
-		if (await ctx.bouncer.with(NotePolicy).denies('read', note.notebookId, notebook)) {
-			ctx.response.abort({ message: 'Not allowed to read this note', status: 403 }, 403);
+		if (await ctx.bouncer.with(NotePolicy).denies('read', notebook.userId, note.notebookId, notebook.id)) {
+			ctx.response.abort({ message: 'Not allowed to read this note' }, 403);
 		}
 
-		ctx.response.send({ result: 'ok', note });
+		ctx.response.jSend({ data: { note } });
 	};
 
 	async readByNotebook(ctx: HttpContext) {
-		const notes = await Note.findManyBy('notebookId', ctx.request.param('id'));
-		const notebook = await Notebook.findOrFail(ctx.request.param('id'));
+		const notebook = ctx.request.comesWith.notebook;
+		const notes = await Note.findManyBy('notebookId', notebook.id);
 
 		if (await ctx.bouncer.with(NotePolicy).denies('read', notebook.userId, notebook.id, notebook.id)) {
-			ctx.response.abort({ message: 'Not allowed to read notes in this notebook', status: 403 }, 403);
+			ctx.response.abort({ message: 'Not allowed to read notes in this notebook' }, 403);
 		}
 
-		ctx.response.send({ result: 'ok', notes });
+		ctx.response.jSend({ data: { notes } });
 	};
 
 	async update(ctx: HttpContext) {
 		const note = await Note.findOrFail(ctx.request.param('id'));
 		const payload = await ctx.request.validateUsing(updateNoteValidator);
-		const notebook = await Notebook.findOrFail(payload.notebookId);
+		const notebook = await Notebook.findOrFail(payload.notebookId || note.notebookId);
 		await ctx.request.validateUsing(sameNotebookValidator,
 			{
 				meta: {
@@ -71,20 +71,20 @@ export default class NotesController {
 		);
 
 		if (await ctx.bouncer.with(NotePolicy).denies('edit', notebook.userId, note.notebookId, note.notebookId)) {
-			ctx.response.abort({ message: 'Not allowed to put notes in this notebook', status: 403 }, 403);
+			ctx.response.abort({ message: 'Not allowed to put notes in this notebook' }, 403);
 		}
 
 		if (await ctx.bouncer.with(NotePolicy).denies('edit', notebook.userId, note.notebookId, notebook.id)) {
-			ctx.response.abort({ message: 'Not allowed to update this note', status: 403 }, 403);
+			ctx.response.abort({ message: 'Not allowed to update this note' }, 403);
 		}
 
 		await note.merge(payload).save();
 
-		ctx.response.send({ result: 'ok', note });
+		ctx.response.jSend({ data: { note } });
 	};
 
 	async updateByNotebook(ctx: HttpContext) {
-		ctx.response.abort({ message: 'Temporarily unavailable', status: 404 }, 404); // TODO: implement or delete; needs validators and bouncers
+		ctx.response.abort({ message: 'Route temporarily unavailable' }, 404); // TODO: implement or delete; needs validators and bouncers
 		// const notes = await Note.findManyBy('notebookId', ctx.request.param('id'));
 		// const payload = await ctx.request.validateUsing(updateArrayNotesValidator);
 		// const trx = await db.transaction();
@@ -113,20 +113,20 @@ export default class NotesController {
 		const notebook = await Notebook.findOrFail(note.notebookId);
 
 		if (await ctx.bouncer.with(NotePolicy).denies('delete', notebook.userId, note.notebookId, notebook.id)) {
-			ctx.response.abort({ message: 'Not allowed to delete this note', status: 403 }, 403);
+			ctx.response.abort({ message: 'Not allowed to delete this note' }, 403);
 		}
 
 		await note.delete();
 
-		ctx.response.send({ result: 'ok', id: ctx.request.param('id') });
+		ctx.response.jSend({ data: null });
 	};
 
 	async deleteByNotebook(ctx: HttpContext) {
-		const notes = await Note.findManyBy('notebookId', ctx.request.param('id'));
-		const notebook = await Notebook.findOrFail('notebookId', ctx.request.param('id'));
+		const notebook = ctx.request.comesWith.notebook;
+		const notes = await Note.findManyBy('notebookId', notebook.id);
 
 		if (await ctx.bouncer.with(NotePolicy).denies('delete', notebook.userId, notebook.id, notebook.id)) {
-			ctx.response.abort({ message: 'Not allowed to delete notes in this notebook', status: 403 }, 403);
+			ctx.response.abort({ message: 'Not allowed to delete notes in this notebook' }, 403);
 		}
 
 		const trx = await db.transaction();
@@ -142,7 +142,7 @@ export default class NotesController {
 			throw e;
 		}
 
-		ctx.response.send({ result: 'ok', notes });
+		ctx.response.jSend({ data: null });
 	};
 
 };

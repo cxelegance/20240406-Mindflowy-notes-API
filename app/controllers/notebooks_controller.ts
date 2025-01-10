@@ -16,58 +16,59 @@ export default class NotebooksController {
 		const payload = await ctx.request.validateUsing(createNotebookValidator);
 
 		if (await ctx.bouncer.with(NotebookPolicy).denies('create', payload.userId)) {
-			ctx.response.abort({ message: 'Not allowed to create notebook', status: 403 }, 403);
+			ctx.response.abort({ message: 'Not allowed to create notebook' }, 403);
 		}
 
 		await notebook.merge(payload).save();
 
-		ctx.response.send({ result: 'ok', notebook });
+		ctx.response.jSend({ data: { notebook } });
 	};
 
 	async read(ctx: HttpContext) {
 		const notebook = await Notebook.findOrFail(ctx.request.param('id'));
 
 		if (await ctx.bouncer.with(NotebookPolicy).denies('read', notebook.userId)) {
-			ctx.response.abort({ message: 'Not allowed to view notebook', status: 403 }, 403);
+			ctx.response.abort({ message: 'Not allowed to view notebook' }, 403);
 		}
 
-		ctx.response.send({ result: 'ok', notebook });
+		ctx.response.jSend({ data: { notebook } });
 	};
 
 	async readByUser(ctx: HttpContext) {
-		const notebooks = await Notebook.findManyBy('userId', ctx.request.param('id'));
+		const user = ctx.request.comesWith.user;
+		const notebooks = await Notebook.findManyBy('userId', user.id);
 
 		if (notebooks.length && await ctx.bouncer.with(NotebookPolicy).denies('read', notebooks[0].userId)) {
-			ctx.response.abort({ message: 'Not allowed to view notebooks', status: 403 }, 403);
+			ctx.response.abort({ message: 'Not allowed to view notebooks' }, 403);
 		}
 
-		ctx.response.send({ result: 'ok', notebooks });
+		ctx.response.jSend({ data: { notebooks } });
 	};
 
 	async update(ctx: HttpContext) {
 		const notebook = await Notebook.findOrFail(ctx.request.param('id'));
 
 		if (await ctx.bouncer.with(NotebookPolicy).denies('edit', notebook.userId)) {
-			ctx.response.abort({ message: 'Not allowed to update notebook', status: 403 }, 403);
+			ctx.response.abort({ message: 'Not allowed to update notebook' }, 403);
 		}
 
 		const payload = await ctx.request.validateUsing(updateNotebookValidator);
 
 		await notebook.merge(payload).save();
 
-		ctx.response.send({ result: 'ok', notebook });
+		ctx.response.jSend({ data: { notebook } });
 	};
 
 	async delete(ctx: HttpContext) {
 		const notebook = await Notebook.findOrFail(ctx.request.param('id'));
 
 		if (await ctx.bouncer.with(NotebookPolicy).denies('delete', notebook.userId)) {
-			ctx.response.abort({ message: 'Not allowed to delete notebook', status: 403 }, 403);
+			ctx.response.abort({ message: 'Not allowed to delete notebook' }, 403);
 		}
 
 		await notebook.delete();
 
-		ctx.response.send({ result: 'ok', id: ctx.request.param('id') });
+		ctx.response.jSend({ data: null });
 	};
 
 };

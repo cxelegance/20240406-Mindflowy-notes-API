@@ -17,11 +17,11 @@ import { middleware } from '#start/kernel';
 router.group(() => {
 
   router.post('', [NotebooksController, 'create']);
-  router.get(':id/notes/', [NotesController, 'readByNotebook']);
+  router.get(':id/notes/', [NotesController, 'readByNotebook']).use(middleware.notebookExists());
   router.get(':id', [NotebooksController, 'read']);
-  router.put(':id/notes/', [NotesController, 'updateByNotebook']);
+  router.put(':id/notes/', [NotesController, 'updateByNotebook']).use(middleware.notebookExists());
   router.put(':id', [NotebooksController, 'update']);
-  router.delete(':id/notes/', [NotesController, 'deleteByNotebook']);
+  router.delete(':id/notes/', [NotesController, 'deleteByNotebook']).use(middleware.notebookExists());
   router.delete(':id', [NotebooksController, 'delete']);
 
 }).prefix('notebook').use(middleware.auth());
@@ -38,7 +38,7 @@ router.group(() => {
 router.group(() => {
 
   router.post('', [UsersController, 'create']); // THIS IS NECESSARILY UNAUTHENTICATED
-  router.get(':id/notebooks/', [NotebooksController, 'readByUser']).use(middleware.auth());
+  router.get(':id/notebooks/', [NotebooksController, 'readByUser']).use(middleware.auth()).use(middleware.userExists());
   router.get(':id', [UsersController, 'read']).use(middleware.auth());
   router.put(':id', [UsersController, 'update']).use(middleware.auth());
   router.delete(':id', [UsersController, 'delete']).use(middleware.auth());

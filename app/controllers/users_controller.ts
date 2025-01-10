@@ -1,5 +1,4 @@
 import type { HttpContext } from '@adonisjs/core/http';
-// import { errors } from '@adonisjs/core';
 
 import User from '#models/user';
 import {
@@ -18,24 +17,24 @@ export default class UsersController {
 
 		await user.merge(payload).save();
 
-		ctx.response.send({ result: 'ok', user });
+		ctx.response.jSend({ data: { user } });
 	};
 
 	async read(ctx: HttpContext) {
 		const user = await User.findOrFail(ctx.request.param('id'));
 
 		if (await ctx.bouncer.with(UserPolicy).denies('read', user.id)) {
-			ctx.response.abort({ message: 'Not allowed to view user', status: 403 }, 403);
+			ctx.response.abort({ message: 'Not allowed to view user' }, 403);
 		}
 
-		ctx.response.send({ result: 'ok', user });
+		ctx.response.jSend({ data: { user } });
 	};
 
 	async update(ctx: HttpContext) {
 		const user = await User.findOrFail(ctx.request.param('id'));
 
 		if (await ctx.bouncer.with(UserPolicy).denies('edit', user.id)) {
-			ctx.response.abort({ message: 'Not allowed to edit user', status: 403 }, 403);
+			ctx.response.abort({ message: 'Not allowed to edit user' }, 403);
 		}
 
 		const userId = user.id;
@@ -49,19 +48,19 @@ export default class UsersController {
 
 		await user.merge(payload).save();
 
-		ctx.response.send({ result: 'ok', user });
+		ctx.response.jSend({ data: { user } });
 	};
 
 	async delete(ctx: HttpContext) {
 		const user = await User.findOrFail(ctx.request.param('id'));
 
 		if (await ctx.bouncer.with(UserPolicy).denies('delete', user.id)) {
-			ctx.response.abort({ message: 'Not allowed to delete user', status: 403 }, 403);
+			ctx.response.abort({ message: 'Not allowed to delete user' }, 403);
 		}
 
 		await user.delete();
 
-		ctx.response.send({ result: 'ok', id: ctx.request.param('id') });
+		ctx.response.jSend({ data: null });
 	};
 
 }
